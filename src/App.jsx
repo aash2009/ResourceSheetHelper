@@ -110,7 +110,7 @@ export default function App() {
 
   // Which screen is showing: the form, the results, or Staff Tools.
   const [screen, setScreen] = useState('form')
-
+  const [step, setStep] = useState(1)
   // Language is the FIRST question because it changes everything after it:
   // this screen and the printed sheet.
   const [lang, setLang] = useState('en')
@@ -179,6 +179,8 @@ export default function App() {
 
   // Returns a function that adds an id to a list, or removes it if it is
   // already there. Used by both checkbox grids.
+  const nextStep = () => setStep((s) => Math.min(s + 1, 6))
+  const prevStep = () => setStep((s) => Math.max(s - 1, 1))
   const toggle = (list, setList) => (id) =>
     setList(list.includes(id) ? list.filter((x) => x !== id) : [...list, id])
 
@@ -222,116 +224,127 @@ export default function App() {
           />
         ) : screen === 'form' ? (
           <>
-            <p className="lede">{T('lede')}</p>
+    {/* Progress Indicator */}
+    <div className="wizard-progress">
+      {T('stepIndicator', { current: step, total: 6 })} 
+    </div>
 
-            {/* Question 1: language. It comes first because it changes the
-                wording of every question below it. */}
-            <section className="card">
-              <h2>
-                <span className="step">1</span> {T('qLanguage')}
-              </h2>
-              <p className="help">{T('qLanguageHelp')}</p>
-              <PickOne
-                options={LANGUAGES}
-                value={lang}
-                onChange={setLang}
-                name={T('qLanguage')}
-              />
-            </section>
+    {/* Step 1: Language */}
+    {step === 1 && (
+      <section className="card">
+        <h2><span className="step">1</span> {T('qLanguage')}</h2>
+        <p className="help">{T('qLanguageHelp')}</p>
+        <PickOne
+          options={LANGUAGES}
+          value={lang}
+          onChange={setLang}
+          name={T('qLanguage')}
+        />
+      </section>
+    )}
 
-            <section className="card">
-              <h2>
-                <span className="step">2</span> {T('qName')}
-                <span className="optional">{T('optional')}</span>
-              </h2>
-              <p className="help">{T('qNameHelp')}</p>
-              <input
-                className="text-input"
-                type="text"
-                value={firstName}
-                // A "controlled input": the box shows whatever is in state,
-                // and typing updates state, which redraws the box.
-                onChange={(e) => setFirstName(e.target.value)}
-                placeholder={T('qNamePlaceholder')}
-                autoComplete="off"
-              />
-            </section>
+    {/* Step 2: Name */}
+    {step === 2 && (
+      <section className="card">
+        <h2><span className="step">2</span> {T('qName')} <span className="optional">{T('optional')}</span></h2>
+        <p className="help">{T('qNameHelp')}</p>
+        <input
+          className="text-input"
+          type="text"
+          value={firstName}
+          onChange={(e) => setFirstName(e.target.value)}
+          placeholder={T('qNamePlaceholder')}
+          autoComplete="off"
+        />
+      </section>
+    )}
 
-            <section className="card">
-              <h2>
-                <span className="step">3</span> {T('qResidence')}
-              </h2>
-              <p className="help">{T('qResidenceHelp')}</p>
-              <PickOne
-                options={localizedOptions('residences', RESIDENCES)}
-                value={residence}
-                onChange={setResidence}
-                name={T('qResidence')}
-              />
-            </section>
+    {/* Step 3: Residence */}
+    {step === 3 && (
+      <section className="card">
+        <h2><span className="step">3</span> {T('qResidence')}</h2>
+        <p className="help">{T('qResidenceHelp')}</p>
+        <PickOne
+          options={localizedOptions('residences', RESIDENCES)}
+          value={residence}
+          onChange={setResidence}
+          name={T('qResidence')}
+        />
+      </section>
+    )}
 
-            <section className="card">
-              <h2>
-                <span className="step">4</span> {T('qSituation')}
-              </h2>
-              <p className="help">{T('qSituationHelp')}</p>
-              <ChoiceGrid
-                options={localizedOptions('situations', SITUATIONS)}
-                selected={situations}
-                onToggle={toggle(situations, setSituations)}
-                name={T('qSituation')}
-              />
-            </section>
+    {/* Step 4: Situations (Checkboxes) */}
+    {step === 4 && (
+      <section className="card">
+        <h2><span className="step">4</span> {T('qSituation')}</h2>
+        <p className="help">{T('qSituationHelp')}</p>
+        <ChoiceGrid
+          options={localizedOptions('situations', SITUATIONS)}
+          selected={situations}
+          onToggle={toggle(situations, setSituations)}
+          name={T('qSituation')}
+        />
+      </section>
+    )}
 
-            <section className="card">
-              <h2>
-                <span className="step">5</span> {T('qNeeds')}
-              </h2>
-              <p className="help">{T('qNeedsHelp')}</p>
-              <ChoiceGrid
-                options={localizedOptions('needs', NEEDS)}
-                selected={needs}
-                onToggle={toggle(needs, setNeeds)}
-                name={T('qNeeds')}
-              />
-            </section>
+    {/* Step 5: Needs (Checkboxes) */}
+    {step === 5 && (
+      <section className="card">
+        <h2><span className="step">5</span> {T('qNeeds')}</h2>
+        <p className="help">{T('qNeedsHelp')}</p>
+        <ChoiceGrid
+          options={localizedOptions('needs', NEEDS)}
+          selected={needs}
+          onToggle={toggle(needs, setNeeds)}
+          name={T('qNeeds')}
+        />
+      </section>
+    )}
 
-            <section className="card">
-              <h2>
-                <span className="step">6</span> {T('qNotes')}
-                <span className="optional">{T('optional')}</span>
-              </h2>
-              <p className="help">{T('qNotesHelp')}</p>
-              <textarea
-                className="text-input"
-                rows={3}
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder={T('qNotesPlaceholder')}
-              />
-            </section>
+    {/* Step 6: Notes */}
+    {step === 6 && (
+      <section className="card">
+        <h2><span className="step">6</span> {T('qNotes')} <span className="optional">{T('optional')}</span></h2>
+        <p className="help">{T('qNotesHelp')}</p>
+        <textarea
+          className="text-input"
+          rows={3}
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder={T('qNotesPlaceholder')}
+        />
+      </section>
+    )}
 
-            <div className="actions">
-              <button
-                type="button"
-                className="btn primary big"
-                onClick={goToResults}
-                disabled={nothingPicked}
-              >
-                {T('makeSheet')}
-              </button>
-              {nothingPicked ? (
-                <p className="hint">{T('needOneBox')}</p>
-              ) : (
-                <p className="hint">
-                  {resources.length === 1
-                    ? T('matchedOne')
-                    : T('matchedMany', { n: resources.length })}
-                </p>
-              )}
-            </div>
-          </>
-        ) : (
+    {/* Wizard Action Footer */}
+    <div className="wizard-actions">
+      {step > 1 && (
+        <button type="button" className="btn ghost" onClick={prevStep}>
+          {T('goBack')}
+        </button>
+      )}
+      {step < 6 ? (
+        <button type="button" className="btn primary" onClick={nextStep}>
+          {T('next')}
+        </button>
+      ) : (
+        <button
+          type="button"
+          className="btn primary big"
+          onClick={goToResults}
+          disabled={nothingPicked}
+        >
+          {T('makeSheet')}
+        </button>
+      )}
+    </div>
+    
+    {step === 6 && nothingPicked && (
+      <p className="hint">{T('needOneBox')}</p>
+    )}
+  </>
+) : (
+  // Results screen code goes here
           <>
             <div className="result-head">
               <button type="button" className="btn ghost" onClick={() => setScreen('form')}>
